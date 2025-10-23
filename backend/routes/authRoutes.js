@@ -17,23 +17,18 @@ const router = express.Router();
  * @desc  Register new user (default role: User)
  * @access Public
  */
-
-// Custom Gmail-only validator
-const onlyGmail = (value) => {
-  if (!value) throw new Error("Email is required");
-  const domain = value.toLowerCase().split("@")[1];
-  if (!domain || (domain !== "gmail.com" && domain !== "googlemail.com")) {
-    throw new Error("Please use a Gmail address (example@gmail.com)");
-  }
-  return true;
-};
-
 router.post(
   "/register",
   [
-    body("name", "Name is required").notEmpty(),
-    body("email", "Valid Gmail is required").isEmail().custom(onlyGmail),
-    body("password", "Password must be 6+ characters").isLength({ min: 6 }),
+    body("name").notEmpty().withMessage("Name is required"),
+    body("email").isEmail().withMessage("Valid email is required")
+      .custom((value) => {
+        if (!value.endsWith("@gmail.com")) {
+          throw new Error("Email must be in @gmail.com format");
+        }
+        return true; // ✅ Important
+      }),
+    body("password").isLength({ min: 6 }).withMessage("Password must be 6+ characters"),
   ],
   registerUser
 );
